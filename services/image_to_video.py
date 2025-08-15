@@ -7,7 +7,7 @@ from PIL import Image
 STORAGE_PATH = "/tmp/"
 logger = logging.getLogger(__name__)
 
-def process_image_to_video(image_url, length, frame_rate, zoom_speed, job_id, webhook_url=None, output_format="reels"):
+def process_image_to_video(image_url, length, frame_rate, zoom_speed, job_id, webhook_url=None):
     try:
         # Download the image file
         image_path = download_file(image_url, STORAGE_PATH)
@@ -18,51 +18,30 @@ def process_image_to_video(image_url, length, frame_rate, zoom_speed, job_id, we
             width, height = img.size
         logger.info(f"Original image dimensions: {width}x{height}")
 
-        # Define output formats
-        format_settings = {
-            "square": {
-                "intermediate": "2880:2880",
-                "output": "720x720"
-            },
-            "reels": {
-                "intermediate": "4320:7680",
-                "output": "1080x1920"
-            },
-            "landscape": {
-                "intermediate": "7680:4320",
-                "output": "1920x1080"
-            }
-        }
+        # Prepare the output path
+        output_path = os.path.join(STORAGE_PATH, f"{job_id}.mp4")
 
-        # Validate requested format
-        if output_format not in format_settings:
-            raise ValueError(f"Invalid output format: {output_format}. Valid options: {list(format_settings.keys())}")
-        
-        settings = format_settings[output_format]
-        intermediate_size = settings["intermediate"]
-        output_dims = settings["output"]
+        # Determine orientation and set appropriate dimensions
+        if width > height:
+            scale_dims = "7680:4320"
+            output_dims = "1920x1080"
+        else:
+            scale_dims = "4320:4320"
+            output_dims = "1080x1080"
 
         # Calculate total frames and zoom factor
         total_frames = int(length * frame_rate)
         zoom_factor = 1 + (zoom_speed * length)
 
-        # Prepare the output path
-        output_path = os.path.join(STORAGE_PATH, f"{job_id}.mp4")
+        logger.info(f"Using scale dimensions: {scale_dims}, output dimensions: {output_dims}")
+        logger.info(f"Video length: {length}s, Frame rate: {frame_rate}fps, Total frames: {total_frames}")
+        logger.info(f"Zoom speed: {zoom_speed}/s, Final zoom factor: {zoom_factor}")
 
         # Prepare FFmpeg command
         cmd = [
-            'ffmpeg',
-            '-framerate', str(frame_rate),
-            '-loop', '1',
-            '-i', image_path,
-            '-vf',
-            f"scale={intermediate_size}:force_original_aspect_ratio=cover,crop={intermediate_size}," +
-            f"zoompan=z='min(1+({zoom_speed}*{length})*on/{total_frames},{zoom_factor})':d={total_frames}" +
-            f":x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s={output_dims}",
-            '-c:v', 'libx264',
-            '-t', str(length),
-            '-pix_fmt', 'yuv420p',
-            output_path
+            'ffmpeg', '-framerate', str(frame_rate), '-loop', '1', '-i', image_path,
+            '-vf', f"scale={scale_dims},zoompan=z='min(1+({zoom_speed}*{length})*on/{total_frames}, {zoom_factor})':d={total_frames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s={output_dims}",
+            '-c:v', 'libx264', '-t', str(length), '-pix_fmt', 'yuv420p', output_path
         ]
 
         logger.info(f"Running FFmpeg command: {' '.join(cmd)}")
@@ -73,7 +52,7 @@ def process_image_to_video(image_url, length, frame_rate, zoom_speed, job_id, we
             logger.error(f"FFmpeg command failed. Error: {result.stderr}")
             raise subprocess.CalledProcessError(result.returncode, cmd, result.stdout, result.stderr)
 
-        logger.info(f"Video created successfully: {output_path} ({output_format})")
+        logger.info(f"Video created successfully: {output_path}")
 
         # Clean up input file
         os.remove(image_path)
