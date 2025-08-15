@@ -29,7 +29,7 @@ def process_image_to_video(image_url, length, frame_rate, zoom_speed, job_id, we
             scale_dims = "4320:4320"
             output_dims = "1024x1024" 
 
-        # Calculate total frames and zoom factor
+        # Calculate total frames and zoom factor asdasd
         total_frames = int(length * frame_rate)
         zoom_factor = 1 + (zoom_speed * length)
 
