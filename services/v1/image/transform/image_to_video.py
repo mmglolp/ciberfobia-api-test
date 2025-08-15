@@ -23,8 +23,8 @@ def process_image_to_video(image_url, length, frame_rate, zoom_speed, job_id, we
 
         # Determine orientation and set appropriate dimensions
         if width > height:
-            scale_dims = "7680:4320"
-            output_dims = "1920x1080"
+            scale_dims = "1024:1024"
+            output_dims = "1024x1024"
         else:
             scale_dims = "4320:7680"
             output_dims = "1080x1920"
