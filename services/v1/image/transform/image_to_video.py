@@ -21,7 +21,7 @@ def process_image_to_video(image_url, length, frame_rate, zoom_speed, job_id, we
         # Prepare the output path
         output_path = os.path.join(STORAGE_PATH, f"{job_id}.mp4")
 
-        # Determine orientation and set appropriate dimensions
+        # Determine orientation and set appropriate dimensions s
         if width > height:
             scale_dims = "1024:1024"
             output_dims = "1024x1024"
