@@ -9,11 +9,11 @@ logger = logging.getLogger(__name__)
 
 def process_image_to_video(image_url, length, frame_rate, zoom_speed, job_id, webhook_url=None):
     try:
-        # Download the image file
+        # Download the image file asdasd
         image_path = download_file(image_url, STORAGE_PATH)
         logger.info(f"Downloaded image to {image_path}")
 
-        # Get image dimensions using Pillow
+        # Get image dimensions using Pillow asdasd
         with Image.open(image_path) as img:
             width, height = img.size
         logger.info(f"Original image dimensions: {width}x{height}")
@@ -21,15 +21,15 @@ def process_image_to_video(image_url, length, frame_rate, zoom_speed, job_id, we
         # Prepare the output path
         output_path = os.path.join(STORAGE_PATH, f"{job_id}.mp4")
 
-        # Determine orientation and set appropriate dimensions
+        # Determine orientation and set appropriate dimensions asdada
         if width > height:
             scale_dims = "7680:4320"
-            output_dims = "1920x1080" 
+            output_dims = "1024x1024" 
         else:
             scale_dims = "4320:4320"
             output_dims = "1080x1080" 
 
-        # Calculate total frames and zoom factor
+        # Calculate total frames and zoom factor asdad
         total_frames = int(length * frame_rate)
         zoom_factor = 1 + (zoom_speed * length)
 
